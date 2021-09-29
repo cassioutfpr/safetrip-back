@@ -166,7 +166,7 @@ public class Main {
         for (int i = 0; i < latitudes; i++ ) {
             System.out.println(String.valueOf(round(res.getBest().getPoints().getLat(i), 5)) + "," + 
                     String.valueOf(round(res.getBest().getPoints().getLon(i),5)) + "|");
-            //lineString += String.valueOf(round(res.getBest().getPoints().getLng(i), 5)) + " " + String.valueOf(round(res.getBest().getPoints().getLat(i),5)) + ", ";
+            lineString += String.valueOf(round(res.getBest().getPoints().getLng(i), 5)) + " " + String.valueOf(round(res.getBest().getPoints().getLat(i),5)) + ", ";
         }
         
         lineString = lineString.substring(0, lineString.length() - 2) + ")";
