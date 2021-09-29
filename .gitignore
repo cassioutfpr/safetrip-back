@@ -1,0 +1,25 @@
+# NetBeans #
+**/nbproject/
+**/build/
+**/nbbuild/
+**/dist/
+**/nbdist/
+**/nbactions.xml
+**/nb-configuration.xml
+**/target/routing-custom-graph-cache/
+
+# Class Files #
+*.class
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+# IntelliJ #
+.idea
+
+.DS_Store
+*.iml
+
+*.pbf
