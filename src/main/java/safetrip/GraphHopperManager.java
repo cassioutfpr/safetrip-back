@@ -5,79 +5,45 @@
  */
 package safetrip;
 
-
 import com.graphhopper.GHRequest;
 import com.graphhopper.GHResponse;
 import com.graphhopper.GraphHopper;
+import com.graphhopper.ResponsePath;
 import com.graphhopper.config.CHProfile;
 import com.graphhopper.config.LMProfile;
 import com.graphhopper.config.Profile;
+import static com.graphhopper.json.Statement.If;
+import static com.graphhopper.json.Statement.Op.MULTIPLY;
 import com.graphhopper.routing.util.EncodingManager;
 import com.graphhopper.routing.weighting.custom.CustomProfile;
 import com.graphhopper.util.CustomModel;
+import com.graphhopper.util.Helper;
+import com.graphhopper.util.Instruction;
+import com.graphhopper.util.InstructionList;
 import com.graphhopper.util.JsonFeature;
-import com.graphhopper.util.shapes.GHPoint;
 import com.graphhopper.util.PointList;
-import java.sql.Connection;
-import java.sql.DriverManager;
+import com.graphhopper.util.Translation;
+import com.graphhopper.util.shapes.GHPoint;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryFactory;
-import static com.graphhopper.json.Statement.Op.LIMIT;
-import static com.graphhopper.json.Statement.Op.MULTIPLY;
-import static com.graphhopper.json.Statement.If;
-import java.sql.PreparedStatement;
-import java.util.ArrayList;
-import java.util.List;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKBReader;
-import org.locationtech.jts.io.WKTReader;
 import org.postgresql.util.PGobject;
 
-public class Main {
+public class GraphHopperManager {
     
-    public static Connection c;
+    private static CustomModel model;
+    private static final String osmFile = "sul-latest.osm.pbf";
     
-    public static Statement databaseConnection() {
-        c = null;
-        Statement stmt = null;
-        
-        try {
-            Class.forName("org.postgresql.Driver");
-            c = DriverManager
-                .getConnection("jdbc:postgresql://192.168.99.100:5432/safe-trip",
-                        "postgres", "dev");
-        }   catch (ClassNotFoundException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);   
-        } catch (SQLException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-        try {
-            stmt = c.createStatement();
-        } catch (SQLException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-        return stmt;
-    }
-    
-   
-    public static void main(String args[]) throws SQLException, ParseException {
-        
-        Statement stmt = databaseConnection();
-        ResultSet rs = stmt.executeQuery( "SELECT * FROM public.trechos;" );
-//        ResultSet rs = stmt.executeQuery( "SELECT * FROM public.trechos WHERE mortos > 0;" );pioe
-        
-        CustomModel model = new CustomModel();
+    public static CustomModel createCustomModelFromPolygonsResultSet(ResultSet rs) throws SQLException, ParseException {         
+        model = new CustomModel();
         Map<String, JsonFeature> maps = new HashMap<>();
         Map<String, Object> properties = new HashMap<>();
         List<String> ids = new ArrayList<>();
@@ -113,28 +79,75 @@ public class Main {
             model.addToPriority(If(ifStatement, MULTIPLY, 1));
             contador++;
         }
-           
-        //GraphHopper hopper = createGraphHopperInstance("sul-latest.osm.pbf"); 
-        //        System.out.println(routeString);
-//        
-//        WKTReader reader = new WKTReader();
-//        Geometry lineStringGeom = reader.read(routeString);
         
-        String routeString = customizableRouting("sul-latest.osm.pbf", model);
-        //String query = "SELECT * FROM public.acidentes WHERE ST_CONTAINS(SELECT * FROM public.acidentes, public.trechos WHERE ST_INTERSECTS(trechos.geom, ST_GeomFromText(?, 4326)), acidentes.geom);";
-        String query = "SELECT * FROM public.acidentes, public.trechos WHERE ST_INTERSECTS(trechos.geom, ST_GeomFromText(?, 4326));";
-        PreparedStatement pstmt = c.prepareStatement(query);
-        pstmt.setString(1, routeString);
-//        rs = stmt.executeQuery( "SELECT * FROM public.trechos;" );
-        rs = pstmt.executeQuery();
-        System.out.println("OOOPA");
- 
+        return model;
     }
     
-    
-    static String customizableRouting(String ghLoc, CustomModel model) {
+    static GraphHopper createGraphHopperInstance() {
         GraphHopper hopper = new GraphHopper();
-        hopper.setOSMFile(ghLoc);
+        hopper.setOSMFile(osmFile);
+        // specify where to store graphhopper files
+        hopper.setGraphHopperLocation("target/routing-graph-cache");
+        hopper.setEncodingManager(EncodingManager.create("car"));
+
+        // see docs/core/profiles.md to learn more about profiles
+        hopper.setProfiles(new Profile("car").setVehicle("car").setWeighting("fastest").setTurnCosts(false));
+
+        // this enables speed mode for the profile we called car
+        hopper.getCHPreparationHandler().setCHProfiles(new CHProfile("car"));
+
+        // now this can take minutes if it imports or a few seconds for loading of course this is dependent on the area you import
+        hopper.importOrLoad();
+        return hopper;
+    }
+
+    public static void getFastestRoute(double initLat, double initLng,
+            double destLat, double destLng) {
+            
+        GraphHopper hopper = createGraphHopperInstance();
+        // simple configuration of the request object
+        GHRequest req = new GHRequest(initLat, initLng, destLat, destLng).
+                // note that we have to specify which profile we are using even when there is only one like here
+                        setProfile("car").
+                // define the language for the turn instructions
+                        setLocale(Locale.US);
+        GHResponse rsp = hopper.route(req);
+
+        // handle errors
+        if (rsp.hasErrors())
+            throw new RuntimeException(rsp.getErrors().toString());
+        
+        System.out.println("Passou do throw eror");
+
+        
+        int latitudes = rsp.getBest().getPoints().size();
+        for (int i = 0; i < latitudes; i++ ) {
+            System.out.println("Latitude " + i + ": " + String.valueOf(rsp.getBest().getPoints().getLat(i)));
+            System.out.println("Longitude " + i + ": " + String.valueOf(rsp.getBest().getPoints().getLon(i)));
+        }
+        
+        // use the best path, see the GHResponse class for more possibilities.
+        ResponsePath path = rsp.getBest();
+
+        // points, distance in meters and time in millis of the full path
+        PointList pointList = path.getPoints();
+        double distance = path.getDistance();
+        long timeInMs = path.getTime();
+
+        Translation tr = hopper.getTranslationMap().getWithFallBack(Locale.UK);
+        InstructionList il = path.getInstructions();
+        // iterate over all turn instructions
+        for (Instruction instruction : il) {
+            // System.out.println("distance " + instruction.getDistance() + " for instruction: " + instruction.getTurnDeion(tr));
+        }
+        assert il.size() == 6;
+        assert Helper.round(path.getDistance(), -2) == 900;
+    }
+    
+    static String customizableRouting(double initLat, double initLng,
+            double destLat, double destLng) {
+        GraphHopper hopper = new GraphHopper();
+        hopper.setOSMFile(osmFile);
         hopper.setGraphHopperLocation("target/routing-custom-graph-cache");
         hopper.setEncodingManager(EncodingManager.create("car"));
         hopper.setProfiles(new CustomProfile("car_custom").setCustomModel(new CustomModel()).setVehicle("car"));
@@ -147,7 +160,7 @@ public class Main {
         // ... but for the hybrid mode we can customize the route calculation even at request time:
         // 1. a request with default preferences
         GHRequest req = new GHRequest().setProfile("car_custom").
-                addPoint(new GHPoint(-25.445132, -49.286595)).addPoint(new GHPoint(-25.40006, -51.467750));
+                addPoint(new GHPoint(initLat, initLng)).addPoint(new GHPoint(destLat, destLng));
 
         GHResponse res;
         
@@ -166,7 +179,9 @@ public class Main {
         for (int i = 0; i < latitudes; i++ ) {
             System.out.println(String.valueOf(round(res.getBest().getPoints().getLat(i), 5)) + "," + 
                     String.valueOf(round(res.getBest().getPoints().getLon(i),5)) + "|");
-            lineString += String.valueOf(round(res.getBest().getPoints().getLng(i), 5)) + " " + String.valueOf(round(res.getBest().getPoints().getLat(i),5)) + ", ";
+            if (i%1000 == 0) {
+                lineString += String.valueOf(round(res.getBest().getPoints().getLon(i), 5)) + " " + String.valueOf(round(res.getBest().getPoints().getLat(i),5)) + ", ";
+            }
         }
         
         lineString = lineString.substring(0, lineString.length() - 2) + ")";
@@ -201,4 +216,6 @@ public class Main {
         
         return model;
     }
+    
+    
 }

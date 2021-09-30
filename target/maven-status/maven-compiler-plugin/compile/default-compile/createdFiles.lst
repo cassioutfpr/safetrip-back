@@ -1,1 +1,4 @@
-safetrip\Main.class
+safetrip\DatabaseConnectionManager.class
+safetrip\SafeTripServer$AccessResourceIntent.class
+safetrip\GraphHopperManager.class
+safetrip\SafeTripServer.class
