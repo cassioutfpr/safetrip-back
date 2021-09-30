@@ -216,6 +216,4 @@ public class GraphHopperManager {
         
         return model;
     }
-    
-    
 }

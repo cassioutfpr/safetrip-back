@@ -1,7 +1,6 @@
 package safetrip;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.graphhopper.util.CustomModel;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -31,7 +30,7 @@ public class SafeTripServer {
     
     
     public static void startHttpServer() throws IOException {
-        HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
+        HttpServer server = HttpServer.create(new InetSocketAddress(8081), 0);
         server.createContext("/route", new AccessResourceIntent());
         server.setExecutor(null); // creates a default executor
         server.start();
@@ -40,7 +39,16 @@ public class SafeTripServer {
     static class AccessResourceIntent implements HttpHandler {        
         @Override
         public void handle(HttpExchange t) throws IOException {
-            System.out.println("OPA");
+            
+            t.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+
+            if (t.getRequestMethod().equalsIgnoreCase("OPTIONS")) {
+                t.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, OPTIONS, POST");
+                t.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type,Authorization");
+                t.sendResponseHeaders(204, -1);
+                return;
+            }
+            
             if (t.getRequestMethod().equals("POST")){
                 InputStream requestBody = t.getRequestBody();
                 ObjectMapper mapper = new ObjectMapper();
@@ -52,8 +60,8 @@ public class SafeTripServer {
                 double destLat = jsonMap.get("destLat");
                 double destLng = jsonMap.get("destLng");
                 
-                GraphHopperManager.customizableRouting( -25.445132D,
-                -49.286595D, -25.40006D, -51.467750D);
+                //GraphHopperManager.customizableRouting( initLat, initLng,
+                //        destLat, destLng);
 
                 t.sendResponseHeaders(200, response.length());
                 OutputStream os = t.getResponseBody();
