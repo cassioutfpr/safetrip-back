@@ -54,14 +54,19 @@ public class SafeTripServer {
                 ObjectMapper mapper = new ObjectMapper();
                 Map<String, Double> jsonMap = mapper.readValue(requestBody, Map.class);
 
-                String response = "{\"available\": ";
+                String response = "";
                 double initLat = jsonMap.get("initLat");
                 double initLng = jsonMap.get("initLng");
                 double destLat = jsonMap.get("destLat");
                 double destLng = jsonMap.get("destLng");
+                response = GraphHopperManager.getFastestRoute(initLat, initLng, destLat, destLng);
+                response += "|";
+                response += GraphHopperManager.customizableRouting(initLat, initLng, destLat, destLng);
+                //response = "23.543543,23.432432;12.432423;43.43242";
                 
                 //GraphHopperManager.customizableRouting( initLat, initLng,
                 //        destLat, destLng);
+                
 
                 t.sendResponseHeaders(200, response.length());
                 OutputStream os = t.getResponseBody();

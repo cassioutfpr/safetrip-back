@@ -76,7 +76,7 @@ public class GraphHopperManager {
         contador = 0;
         for (String id : ids) {
             String ifStatement = "in_area_" + nome + contador + " == true";
-            model.addToPriority(If(ifStatement, MULTIPLY, 1));
+            model.addToPriority(If(ifStatement, MULTIPLY, 0.8));
             contador++;
         }
         
@@ -101,7 +101,7 @@ public class GraphHopperManager {
         return hopper;
     }
 
-    public static void getFastestRoute(double initLat, double initLng,
+    public static String getFastestRoute(double initLat, double initLng,
             double destLat, double destLng) {
             
         GraphHopper hopper = createGraphHopperInstance();
@@ -120,11 +120,18 @@ public class GraphHopperManager {
         System.out.println("Passou do throw eror");
 
         
-        int latitudes = rsp.getBest().getPoints().size();
-        for (int i = 0; i < latitudes; i++ ) {
-            System.out.println("Latitude " + i + ": " + String.valueOf(rsp.getBest().getPoints().getLat(i)));
-            System.out.println("Longitude " + i + ": " + String.valueOf(rsp.getBest().getPoints().getLon(i)));
+        int routePoints = rsp.getBest().getPoints().size();
+        String response = "";
+        for (int i = 0; i < routePoints; i++ ) {
+            if (i%20 == 0) {
+                response += String.valueOf(rsp.getBest().getPoints().getLat(i)) + "," + String.valueOf(rsp.getBest().getPoints().getLon(i)) + ";";
+            }
         }
+        
+        return response;
+        
+        /*
+        OUTRAS INFOS DO CAMINHO MAIS RÁPIDO
         
         // use the best path, see the GHResponse class for more possibilities.
         ResponsePath path = rsp.getBest();
@@ -142,6 +149,8 @@ public class GraphHopperManager {
         }
         assert il.size() == 6;
         assert Helper.round(path.getDistance(), -2) == 900;
+        * 
+        * ***/
     }
     
     static String customizableRouting(double initLat, double initLng,
@@ -176,16 +185,20 @@ public class GraphHopperManager {
                         
         int latitudes = res.getBest().getPoints().size();
         String lineString = "LINESTRING (";
+        String response = "";
         for (int i = 0; i < latitudes; i++ ) {
-            System.out.println(String.valueOf(round(res.getBest().getPoints().getLat(i), 5)) + "," + 
-                    String.valueOf(round(res.getBest().getPoints().getLon(i),5)) + "|");
-            if (i%1000 == 0) {
-                lineString += String.valueOf(round(res.getBest().getPoints().getLon(i), 5)) + " " + String.valueOf(round(res.getBest().getPoints().getLat(i),5)) + ", ";
+            //System.out.println(String.valueOf(round(res.getBest().getPoints().getLat(i), 5)) + "," + 
+             //       String.valueOf(round(res.getBest().getPoints().getLon(i),5)) + "|");
+            //if (i%1000 == 0) {
+            //    lineString += String.valueOf(round(res.getBest().getPoints().getLon(i), 5)) + " " + String.valueOf(round(res.getBest().getPoints().getLat(i),5)) + ", ";
+            //}
+            if (i%20 == 0) {
+                response += String.valueOf(res.getBest().getPoints().getLat(i)) + "," + String.valueOf(res.getBest().getPoints().getLon(i)) + ";";
             }
         }
         
-        lineString = lineString.substring(0, lineString.length() - 2) + ")";
-        return lineString;
+        //lineString = lineString.substring(0, lineString.length() - 2) + ")";
+        return response;
 
     }
     
