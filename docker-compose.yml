@@ -1,0 +1,19 @@
+version: '2.4'
+
+services:
+  postgres:
+    image:  postgis/postgis:13-3.0
+    environment:
+      POSTGRES_PASSWORD: dev
+      POSTGRES_USER: postgres
+      POSTGRES_DB: safe-trip
+    restart: always
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    mem_limit: 512m
+
+volumes:
+  postgres_data:
