@@ -30,7 +30,8 @@ public class SafeTripServer {
     
     
     public static void startHttpServer() throws IOException {
-        HttpServer server = HttpServer.create(new InetSocketAddress(8081), 0);
+        int port = Integer.parseInt(System.getenv("$PORT"));
+        HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/route", new AccessResourceIntent());
         server.setExecutor(null); // creates a default executor
         server.start();
@@ -68,6 +69,14 @@ public class SafeTripServer {
                 //        destLat, destLng);
                 
 
+                t.sendResponseHeaders(200, response.length());
+                OutputStream os = t.getResponseBody();
+                os.write(response.getBytes());
+                os.close();
+            }
+
+            if (t.getRequestMethod().equals("GET")){
+                String response = "TO VIVO";
                 t.sendResponseHeaders(200, response.length());
                 OutputStream os = t.getResponseBody();
                 os.write(response.getBytes());
