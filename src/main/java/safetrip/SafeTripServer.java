@@ -11,11 +11,10 @@ import java.net.InetSocketAddress;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
-import org.locationtech.jts.io.ParseException;
 
 public class SafeTripServer {
        
-    public static void main(String args[]) throws SQLException, ParseException, IOException {
+    public static void main(String args[]) throws SQLException, IOException {
         DatabaseConnectionManager.init();
         ResultSet rs = DatabaseConnectionManager.query( "SELECT * FROM public.trechos;" );
         GraphHopperManager.createCustomModelFromPolygonsResultSet(rs);
@@ -30,7 +29,7 @@ public class SafeTripServer {
     
     
     public static void startHttpServer() throws IOException {
-        int port = Integer.parseInt(System.getenv("$PORT"));
+        int port = Integer.parseInt(System.getenv("PORT"));
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/route", new AccessResourceIntent());
         server.setExecutor(null); // creates a default executor

@@ -33,7 +33,6 @@ import java.util.Locale;
 import java.util.Map;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKBReader;
 import org.postgresql.util.PGobject;
 
@@ -42,7 +41,7 @@ public class GraphHopperManager {
     private static CustomModel model;
     private static final String osmFile = "sul-latest.osm.pbf";
     
-    public static CustomModel createCustomModelFromPolygonsResultSet(ResultSet rs) throws SQLException, ParseException {         
+    public static CustomModel createCustomModelFromPolygonsResultSet(ResultSet rs) throws SQLException {
         model = new CustomModel();
         Map<String, JsonFeature> maps = new HashMap<>();
         Map<String, Object> properties = new HashMap<>();
@@ -61,8 +60,13 @@ public class GraphHopperManager {
             
             WKBReader wkbReader = new WKBReader();
             byte[] geom = wkbReader.hexToBytes(geomCol.getValue());
-            
-            Geometry geometry = wkbReader.read(geom);
+
+            Geometry geometry = null;
+            try {
+                geometry = wkbReader.read(geom);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             Envelope env = geometry.getEnvelopeInternal();
             JsonFeature jsonFeature = new JsonFeature(nome + contador, "tipo", null, geometry, properties);
         

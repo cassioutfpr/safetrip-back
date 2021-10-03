@@ -13,10 +13,7 @@ import java.util.logging.Logger;
 
 public class DatabaseConnectionManager {
     
-    private static final String url = "jdbc:postgresql://192.168.99.100:5432/safe-trip";    
-    private static final String driverName = "org.postgresql.Driver";   
-    private static final String username = "postgres";   
-    private static final String password = "dev";
+    private static final String driverName = "org.postgresql.Driver";
     private static Connection con;
     private static Statement stmt;
     
@@ -29,12 +26,19 @@ public class DatabaseConnectionManager {
         try {
             Class.forName(driverName);
             try {
+                String hostname = System.getenv("DATABASE_HOST");
+                int port = Integer.parseInt(System.getenv("DATABASE_PORT"));
+                String username = System.getenv("DATABASE_USERNAME");
+                String password = System.getenv("DATABASE_PASSWORD");
+                String url =  "jdbc:postgresql://" + hostname + ":" + port + "/postgres";
+                System.out.println(url);
                 con = DriverManager.getConnection(url, username, password);
             } catch (SQLException ex) {
                 System.out.println("Failed to create the database connection."); 
             }
         } catch (ClassNotFoundException ex) {
-            System.out.println("Driver not found."); 
+            System.out.println(ex.getMessage());
+            ex.printStackTrace();
         }
         return con;
     }
