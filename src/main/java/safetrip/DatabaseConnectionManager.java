@@ -48,6 +48,7 @@ public class DatabaseConnectionManager {
             stmt = con.createStatement();
         } catch (SQLException ex) {
             Logger.getLogger(SafeTripServer.class.getName()).log(Level.SEVERE, null, ex);
+            ex.printStackTrace();
         }
         return stmt;
     }

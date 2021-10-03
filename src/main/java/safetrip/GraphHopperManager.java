@@ -39,7 +39,7 @@ import org.postgresql.util.PGobject;
 public class GraphHopperManager {
     
     private static CustomModel model;
-    private static final String osmFile = "sul-latest.osm.pbf";
+    public static final String osmFile = "sul-latest.osm.pbf";
     
     public static CustomModel createCustomModelFromPolygonsResultSet(ResultSet rs) throws SQLException {
         model = new CustomModel();
@@ -54,6 +54,7 @@ public class GraphHopperManager {
         while ( rs.next() ) {
             //String id = (String) rs.getObject(1);
             ids.add(nome + contador);
+            System.out.println((String) rs.getObject(1));
             
             
             PGobject geomCol = (PGobject) rs.getObject(2);
@@ -80,7 +81,8 @@ public class GraphHopperManager {
         contador = 0;
         for (String id : ids) {
             String ifStatement = "in_area_" + nome + contador + " == true";
-            model.addToPriority(If(ifStatement, MULTIPLY, 0.8));
+            model.addToPriority(If(ifStatement, MULTIPLY, 0));
+            System.out.println(ifStatement);
             contador++;
         }
         
@@ -127,15 +129,15 @@ public class GraphHopperManager {
         int routePoints = rsp.getBest().getPoints().size();
         String response = "";
         for (int i = 0; i < routePoints; i++ ) {
-            if (i%20 == 0) {
+            if (i%2 == 0) {
                 response += String.valueOf(rsp.getBest().getPoints().getLat(i)) + "," + String.valueOf(rsp.getBest().getPoints().getLon(i)) + ";";
             }
         }
-        
+
         return response;
         
         /*
-        OUTRAS INFOS DO CAMINHO MAIS RÁPIDO
+        OUTRAS INFOS DO CAMINHO MAIS Rï¿½PIDO
         
         // use the best path, see the GHResponse class for more possibilities.
         ResponsePath path = rsp.getBest();
@@ -196,7 +198,7 @@ public class GraphHopperManager {
             //if (i%1000 == 0) {
             //    lineString += String.valueOf(round(res.getBest().getPoints().getLon(i), 5)) + " " + String.valueOf(round(res.getBest().getPoints().getLat(i),5)) + ", ";
             //}
-            if (i%20 == 0) {
+            if (i%2 == 0) {
                 response += String.valueOf(res.getBest().getPoints().getLat(i)) + "," + String.valueOf(res.getBest().getPoints().getLon(i)) + ";";
             }
         }

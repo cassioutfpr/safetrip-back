@@ -4,10 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import org.apache.commons.io.FileUtils;
+
+import java.io.*;
 import java.net.InetSocketAddress;
+import java.net.URL;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
@@ -18,6 +19,13 @@ public class SafeTripServer {
         DatabaseConnectionManager.init();
         ResultSet rs = DatabaseConnectionManager.query( "SELECT * FROM public.trechos;" );
         GraphHopperManager.createCustomModelFromPolygonsResultSet(rs);
+
+        System.out.println("Baixeno arkivo");
+        FileUtils.copyURLToFile(
+                new URL(System.getenv("OSM_FILEPATH")),
+                new File(GraphHopperManager.osmFile)
+        );
+        System.out.println("Arkivo abaxado");
         
         startHttpServer();
              
@@ -41,8 +49,12 @@ public class SafeTripServer {
         public void handle(HttpExchange t) throws IOException {
             
             t.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+            t.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, OPTIONS, POST");
+            t.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type,Authorization");
 
+            System.out.println("Receiving request");
             if (t.getRequestMethod().equalsIgnoreCase("OPTIONS")) {
+                System.out.println("Options");
                 t.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, OPTIONS, POST");
                 t.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type,Authorization");
                 t.sendResponseHeaders(204, -1);
@@ -50,6 +62,7 @@ public class SafeTripServer {
             }
             
             if (t.getRequestMethod().equals("POST")){
+                System.out.println("POST route");
                 InputStream requestBody = t.getRequestBody();
                 ObjectMapper mapper = new ObjectMapper();
                 Map<String, Double> jsonMap = mapper.readValue(requestBody, Map.class);
@@ -72,9 +85,11 @@ public class SafeTripServer {
                 OutputStream os = t.getResponseBody();
                 os.write(response.getBytes());
                 os.close();
+                return;
             }
 
             if (t.getRequestMethod().equals("GET")){
+                System.out.println("GET route");
                 String response = "TO VIVO";
                 t.sendResponseHeaders(200, response.length());
                 OutputStream os = t.getResponseBody();
