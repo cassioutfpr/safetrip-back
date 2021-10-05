@@ -81,7 +81,7 @@ public class GraphHopperManager {
         contador = 0;
         for (String id : ids) {
             String ifStatement = "in_area_" + nome + contador + " == true";
-            model.addToPriority(If(ifStatement, MULTIPLY, 0));
+            model.addToPriority(If(ifStatement, MULTIPLY, 0.1));
             System.out.println(ifStatement);
             contador++;
         }
