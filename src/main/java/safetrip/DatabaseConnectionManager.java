@@ -9,6 +9,7 @@ import java.sql.Statement;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.locationtech.jts.geom.Geometry;
 
 
 public class DatabaseConnectionManager {
@@ -69,5 +70,5 @@ public class DatabaseConnectionManager {
         
         return pstmt.executeQuery();
     }
-    
+   
 }

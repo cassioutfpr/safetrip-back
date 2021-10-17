@@ -12,6 +12,9 @@ import java.security.KeyStore;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.locationtech.jts.io.ParseException;
 
 public class SafeTripServer {
        
@@ -103,6 +106,7 @@ public class SafeTripServer {
     static class AccessResourceIntent implements HttpHandler {        
         @Override
         public void handle(HttpExchange t) throws IOException {
+            System.out.println("REQUEST");
             
             t.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
             t.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, OPTIONS, POST");
@@ -128,13 +132,14 @@ public class SafeTripServer {
                 double initLng = jsonMap.get("initLng");
                 double destLat = jsonMap.get("destLat");
                 double destLng = jsonMap.get("destLng");
-                response = GraphHopperManager.getFastestRoute(initLat, initLng, destLat, destLng);
-                response += "|";
-                response += GraphHopperManager.customizableRouting(initLat, initLng, destLat, destLng);
-                //response = "23.543543,23.432432;12.432423;43.43242";
-                
-                //GraphHopperManager.customizableRouting( initLat, initLng,
-                //        destLat, destLng);
+                try {
+                    response = GraphHopperManager.getFastestRoute(initLat, initLng, destLat, destLng);
+                    response += "|";
+                    response += GraphHopperManager.customizableRouting(initLat, initLng, destLat, destLng);
+                } catch (SQLException ex) {
+                    Logger.getLogger(SafeTripServer.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                System.out.println("rwesponse1");
                 
 
                 t.sendResponseHeaders(200, response.length());
