@@ -24,13 +24,13 @@ public class SafeTripServer {
         DatabaseConnectionManager.init();
         ResultSet rs = DatabaseConnectionManager.query( "SELECT * FROM public.trechos;" );
         GraphHopperManager.createCustomModelFromPolygonsResultSet(rs);
-//
-//        System.out.println("Baixeno arkivo");
-//        FileUtils.copyURLToFile(
-//                new URL(System.getenv("OSM_FILEPATH")),
-//                new File(GraphHopperManager.osmFile)
-//        );
-//        System.out.println("Arkivo abaxado");
+
+        System.out.println("Baixeno arkivo");
+        FileUtils.copyURLToFile(
+                new URL(System.getenv("OSM_FILEPATH")),
+                new File(GraphHopperManager.osmFile)
+        );
+        System.out.println("Arkivo abaxado");
         
         startHttpServer();
         //startHttpsServer();
@@ -43,7 +43,7 @@ public class SafeTripServer {
     
     
     public static void startHttpServer() throws IOException {
-        int port = 8081;
+        int port = Integer.parseInt(System.getenv("HTTP_PORT"));
         ExecutorService executor = Executors.newFixedThreadPool(4);
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/route-fast", new AccessResourceIntent());

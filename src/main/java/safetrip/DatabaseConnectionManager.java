@@ -27,12 +27,11 @@ public class DatabaseConnectionManager {
         try {
             Class.forName(driverName);
             try {
-                String hostname = "192.168.99.100";
-                int port = 5432;
-                String username = "postgres";
-                String password = "dev";
-                String url =  "jdbc:postgresql://" + hostname + ":" + port + "/safe-trip";
-                System.out.println(url);
+                String hostname = System.getenv("DATABASE_HOST");
+                int port = Integer.parseInt(System.getenv("DATABASE_PORT"));
+                String username = System.getenv("DATABASE_USERNAME");
+                String password = System.getenv("DATABASE_PASSWORD");
+                String url =  "jdbc:postgresql://" + hostname + ":" + port + "/postgres";
                 con = DriverManager.getConnection(url, username, password);
             } catch (SQLException ex) {
                 System.out.println("Failed to create the database connection."); 
@@ -66,10 +65,8 @@ public class DatabaseConnectionManager {
         for (String strignToReplace : replaceStringList) {
             pstmt.setString(stringIndex, strignToReplace);    
             stringIndex++;
-            
         }
         
-        System.out.println(pstmt);
         return pstmt.executeQuery();
     }
    
