@@ -187,7 +187,7 @@ public class GraphHopperManager {
                 response += String.valueOf(rsp.getBest().getPoints().getLat(i)) + "," + String.valueOf(rsp.getBest().getPoints().getLon(i)) + ";";
             }
             
-            if (i%2 == 0) {
+            if (i%4 == 0) {
                 String wktString = "POINT(" + rsp.getBest().getPoints().getLon(i) + " " + rsp.getBest().getPoints().getLat(i) + ")";
                         
                 ResultSet rs = DatabaseConnectionManager.queryPreparedStatement(
@@ -298,7 +298,7 @@ public class GraphHopperManager {
                 response += String.valueOf(rsp.getBest().getPoints().getLat(i)) + "," + String.valueOf(rsp.getBest().getPoints().getLon(i)) + ";";
             }
             
-            if (i%2 == 0) {
+            if (i%4 == 0) {
                 String wktString = "POINT(" + rsp.getBest().getPoints().getLon(i) + " " + rsp.getBest().getPoints().getLat(i) + ")";
 
                 
