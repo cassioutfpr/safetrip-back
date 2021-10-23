@@ -62,8 +62,8 @@ public class GraphHopperManager {
 //        }
         
 //        float average = numberAcidents/count;
-        double average = 944;
-        double step = (7000 - average)/50.0;
+        double average = 200;
+        double step = (4763 - average)/50.0;
         
         System.out.println(average);
         
@@ -173,11 +173,11 @@ public class GraphHopperManager {
         // handle errors
         if (rsp.hasErrors())
             throw new RuntimeException(rsp.getErrors().toString());
-        
-        System.out.println("Passou do throw eror");
+       
 
         
         int routePoints = rsp.getBest().getPoints().size();
+        System.out.println("Roteou 1");
         
         String response = "";
         Map<Integer, Integer> hoursMap = initHoursMap();
@@ -187,7 +187,7 @@ public class GraphHopperManager {
                 response += String.valueOf(rsp.getBest().getPoints().getLat(i)) + "," + String.valueOf(rsp.getBest().getPoints().getLon(i)) + ";";
             }
             
-            if (i%5 == 0) {
+            if (i%50 == 0) {
                 String wktString = "POINT(" + rsp.getBest().getPoints().getLon(i) + " " + rsp.getBest().getPoints().getLat(i) + ")";
                         
                 ResultSet rs = DatabaseConnectionManager.queryPreparedStatement(
@@ -219,6 +219,8 @@ public class GraphHopperManager {
                 }
             }
         }
+        
+        System.out.println("Respondeu 1");
         
         response = response + "|" + rsp.getBest().getTime() + "|" + rsp.getBest().getDistance();
         
@@ -284,7 +286,7 @@ public class GraphHopperManager {
         //model = createEnvolope(-50.39154052734375, -50.167694091796875, -25.506502941775665, -25.408546892670543, model);
 
         rsp = hopper.route(req);
-        
+        System.out.println("Roteou 2");
                         
         int latitudes = rsp.getBest().getPoints().size();
         Map<Integer, Integer> hoursMap = initHoursMap();
@@ -296,7 +298,7 @@ public class GraphHopperManager {
                 response += String.valueOf(rsp.getBest().getPoints().getLat(i)) + "," + String.valueOf(rsp.getBest().getPoints().getLon(i)) + ";";
             }
             
-            if (i%5 == 0) {
+            if (i%50 == 0) {
                 String wktString = "POINT(" + rsp.getBest().getPoints().getLon(i) + " " + rsp.getBest().getPoints().getLat(i) + ")";
 
                 
@@ -330,6 +332,7 @@ public class GraphHopperManager {
             }
         }
         
+        System.out.println("Respondeu 2");
         response = response + "|" + rsp.getBest().getTime() + "|" + rsp.getBest().getDistance();
         
         for (int i = 0; i < 24; i++) {
