@@ -140,6 +140,7 @@ public class SafeTripServer {
                     response = GraphHopperManager.getFastestRoute(initLat, initLng, destLat, destLng);
                 } catch (SQLException ex) {
                     Logger.getLogger(SafeTripServer.class.getName()).log(Level.SEVERE, null, ex);
+                    ex.printStackTrace();
                 }
                 System.out.println("rwesponse1");
                 
@@ -194,8 +195,9 @@ public class SafeTripServer {
                 double destLng = jsonMap.get("destLng");
                 try {
                     response += GraphHopperManager.customizableRouting(initLat, initLng, destLat, destLng);
-                } catch (SQLException ex) {
+                } catch (Exception ex) {
                     Logger.getLogger(SafeTripServer.class.getName()).log(Level.SEVERE, null, ex);
+                    ex.printStackTrace();
                 }
                 System.out.println("rwesponse2");
                 
