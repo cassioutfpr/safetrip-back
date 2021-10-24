@@ -129,11 +129,11 @@ public class GraphHopperManager {
     public static Map<String, Integer> initDaysMap() {
         Map<String, Integer> daysMap = new HashMap<>();
         daysMap.put("Segunda", 0);
-        daysMap.put("Terça", 0);
+        daysMap.put("Terï¿½a", 0);
         daysMap.put("Quarta", 0);
         daysMap.put("Quinta", 0);
         daysMap.put("Sexta", 0);
-        daysMap.put("Sábado", 0);
+        daysMap.put("Sï¿½bado", 0);
         daysMap.put("Domingo", 0);
         
         return daysMap;
@@ -228,9 +228,9 @@ public class GraphHopperManager {
             response += "|" + hoursMap.get(i);
         }
         
-        response += "|" + daysMap.get("Segunda") + "|" + daysMap.get("Terça")
+        response += "|" + daysMap.get("Segunda") + "|" + daysMap.get("TerÃ§a")
                 + "|" + daysMap.get("Quarta") + "|" + daysMap.get("Quinta")
-                + "|" + daysMap.get("Sexta") + "|" + daysMap.get("Sábado")
+                + "|" + daysMap.get("Sexta") + "|" + daysMap.get("SÃ¡bado")
                 + "|" + daysMap.get("Domingo");
         
         return response;
@@ -339,9 +339,9 @@ public class GraphHopperManager {
             response += "|" + hoursMap.get(i);
         }
         
-        response += "|" + daysMap.get("Segunda") + "|" + daysMap.get("Terça")
+        response += "|" + daysMap.get("Segunda") + "|" + daysMap.get("TerÃ§a")
                 + "|" + daysMap.get("Quarta") + "|" + daysMap.get("Quinta")
-                + "|" + daysMap.get("Sexta") + "|" + daysMap.get("Sábado")
+                + "|" + daysMap.get("Sexta") + "|" + daysMap.get("SÃ¡bado")
                 + "|" + daysMap.get("Domingo");
         
         return response;
