@@ -18,11 +18,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class SafeTripServer {
-       
+
+    private static TrechosRepository trechosRepository = new TrechosRepository();
+
     public static void main(String args[]) throws SQLException, IOException {
         DatabaseConnectionManager.init();
+        Double averageAccidents = trechosRepository.getAverageAccidents();
+        Integer maxAccidents = trechosRepository.getMaxAccidents();
         ResultSet rs = new TrechosRepository().getAll();
-        GraphHopperManager.createCustomModelFromPolygonsResultSet(rs);
+        GraphHopperManager.createCustomModelFromPolygonsResultSet(rs, averageAccidents, maxAccidents);
 
         System.out.println("Baixeno arkivo");
         FileUtils.copyURLToFile(

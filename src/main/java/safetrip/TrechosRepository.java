@@ -27,7 +27,7 @@ public class TrechosRepository {
         );
     }
 
-    public Double getAverage() throws SQLException {
+    public Double getAverageAccidents() throws SQLException {
         ResultSet rs = DatabaseConnectionManager.query(
             setTable("SELECT AVG(accidents) AS accidents_average FROM public.:table;")
         );
@@ -39,6 +39,20 @@ public class TrechosRepository {
         );
         rs.close();
         return average;
+    }
+
+    public Integer getMaxAccidents() throws SQLException {
+        ResultSet rs = DatabaseConnectionManager.query(
+                setTable("SELECT MAX(accidents) AS accidents_max FROM public.:table;")
+        );
+
+        rs.next();
+        Integer max = Integer.parseInt(
+            rs.getObject("accidents_max")
+                .toString()
+        );
+        rs.close();
+        return max;
     }
 
     private String setTable(String statement) {

@@ -39,7 +39,11 @@ public class GraphHopperManager {
     private static final AcidentesRepository acidentesRepository = new AcidentesRepository();
     private static final TrechosRepository trechosRepository = new TrechosRepository();
     
-    public static CustomModel createCustomModelFromPolygonsResultSet(ResultSet rs) throws SQLException {
+    public static CustomModel createCustomModelFromPolygonsResultSet(
+        ResultSet rs,
+        Double averageAccidents,
+        Integer maxAccidents
+    ) throws SQLException {
         model = new CustomModel();
         Map<String, JsonFeature> maps = new HashMap<>();
         Map<String, Object> properties = new HashMap<>();
@@ -64,10 +68,10 @@ public class GraphHopperManager {
 //        }
         
 //        float average = numberAcidents/count;
-        double average = trechosRepository.getAverage();
-        double step = (4763 - average)/50.0;
+        double step = (maxAccidents - averageAccidents)/50.0;
         
-        System.out.println(average);
+        System.out.println(averageAccidents);
+        System.out.println(maxAccidents);
         
         while ( rs.next() ) {
             BigDecimal buff = (BigDecimal)(rs.getObject(4));
@@ -90,7 +94,7 @@ public class GraphHopperManager {
             JsonFeature jsonFeature = new JsonFeature(nome + contador, "tipo", null, geometry, properties);
         
             maps.put(nome + contador, jsonFeature);
-            double multiplier = 0.8 - (((acidentesPolygon - average)/step) * 0.01);
+            double multiplier = 0.8 - (((acidentesPolygon - averageAccidents)/step) * 0.01);
             ids.add(multiplier);
             
             contador++;
