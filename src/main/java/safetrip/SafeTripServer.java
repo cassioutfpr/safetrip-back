@@ -16,13 +16,12 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.locationtech.jts.io.ParseException;
 
 public class SafeTripServer {
        
     public static void main(String args[]) throws SQLException, IOException {
         DatabaseConnectionManager.init();
-        ResultSet rs = DatabaseConnectionManager.query( "SELECT * FROM public.trechos;" );
+        ResultSet rs = new TrechosRepository().getAll();
         GraphHopperManager.createCustomModelFromPolygonsResultSet(rs);
 
         System.out.println("Baixeno arkivo");

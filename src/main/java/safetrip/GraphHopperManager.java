@@ -36,6 +36,8 @@ public class GraphHopperManager {
     
     private static CustomModel model;
     public static final String osmFile = "sul-latest.osm.pbf";
+    private static final AcidentesRepository acidentesRepository = new AcidentesRepository();
+    private static final TrechosRepository trechosRepository = new TrechosRepository();
     
     public static CustomModel createCustomModelFromPolygonsResultSet(ResultSet rs) throws SQLException {
         model = new CustomModel();
@@ -188,19 +190,16 @@ public class GraphHopperManager {
             }
             
             if (i%3 == 0) {
-                String wktString = "POINT(" + rsp.getBest().getPoints().getLon(i) + " " + rsp.getBest().getPoints().getLat(i) + ")";
-                        
-                ResultSet rs = DatabaseConnectionManager.queryPreparedStatement(
-                "SELECT * FROM public.trechos WHERE ST_CONTAINS(geom, ST_GeomFromText(?, 4326));",
-                Arrays.asList(wktString));
+                ResultSet rs = trechosRepository.findByContainingLongAndLat(
+                    rsp.getBest().getPoints().getLon(i),
+                    rsp.getBest().getPoints().getLat(i)
+                );
                 while ( rs.next() ) {
                     String buff = (String)(rs.getObject(1));
                     if (!polygonIdList.contains(buff))  {
                         polygonIdList.add(buff);
             
-                        ResultSet rs2 = DatabaseConnectionManager.queryPreparedStatement(
-                        "SELECT * FROM public.acidentes WHERE trecho = ?;",
-                        Arrays.asList(buff));
+                        ResultSet rs2 = acidentesRepository.findByTrecho(buff);
 
                         while ( rs2.next() ) {
                             String dia_semana = (String)(rs2.getObject(3));
@@ -299,20 +298,16 @@ public class GraphHopperManager {
             }
             
             if (i%3 == 0) {
-                String wktString = "POINT(" + rsp.getBest().getPoints().getLon(i) + " " + rsp.getBest().getPoints().getLat(i) + ")";
-
-                
-                ResultSet rs = DatabaseConnectionManager.queryPreparedStatement(
-                "SELECT * FROM public.trechos WHERE ST_CONTAINS(geom, ST_GeomFromText(?, 4326));",
-                Arrays.asList(wktString));
+                ResultSet rs = trechosRepository.findByContainingLongAndLat(
+                        rsp.getBest().getPoints().getLon(i),
+                        rsp.getBest().getPoints().getLat(i)
+                );
                 while ( rs.next() ) {
                     String buff = (String)(rs.getObject(1));
                     if (!polygonIdList.contains(buff))  {
                         polygonIdList.add(buff);
             
-                        ResultSet rs2 = DatabaseConnectionManager.queryPreparedStatement(
-                        "SELECT * FROM public.acidentes WHERE trecho = ?;",
-                        Arrays.asList(buff));
+                        ResultSet rs2 = acidentesRepository.findByTrecho(buff);
 
                         while ( rs2.next() ) {
                             String dia_semana = (String)(rs2.getObject(3));
