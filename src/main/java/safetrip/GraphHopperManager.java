@@ -64,7 +64,7 @@ public class GraphHopperManager {
 //        }
         
 //        float average = numberAcidents/count;
-        double average = 200;
+        double average = trechosRepository.getAverage();
         double step = (4763 - average)/50.0;
         
         System.out.println(average);

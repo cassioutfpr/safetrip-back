@@ -27,6 +27,20 @@ public class TrechosRepository {
         );
     }
 
+    public Double getAverage() throws SQLException {
+        ResultSet rs = DatabaseConnectionManager.query(
+            setTable("SELECT AVG(accidents) AS accidents_average FROM public.:table;")
+        );
+
+        rs.next();
+        Double average = Double.parseDouble(
+            rs.getObject("accidents_average")
+                .toString()
+        );
+        rs.close();
+        return average;
+    }
+
     private String setTable(String statement) {
         return statement.replace(":table", tableName);
     }
