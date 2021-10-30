@@ -6,11 +6,9 @@ import org.apache.commons.io.FileUtils;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
 
-import javax.net.ssl.*;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.URL;
-import java.security.KeyStore;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
@@ -28,23 +26,20 @@ public class SafeTripServer {
         ResultSet rs = new TrechosRepository().getAll();
         GraphHopperManager.createCustomModelFromPolygonsResultSet(rs, averageAccidents, maxAccidents);
 
+        setupGraphHopperCache();
+
+        startHttpServer();
+    }
+
+    private static void setupGraphHopperCache() throws IOException {
         System.out.println("Baixeno arkivo");
         FileUtils.copyURLToFile(
-                new URL(System.getenv("OSM_FILEPATH")),
-                new File(GraphHopperManager.osmFile)
+            new URL(System.getenv("OSM_FILEPATH")),
+            new File(GraphHopperManager.osmFile)
         );
         System.out.println("Arkivo abaxado");
-        
-        startHttpServer();
-        //startHttpsServer();
-             
-        //DatabaseConnectionManager.queryPreparedStatement(
-        //        "SELECT * FROM public.acidentes, public.trechos WHERE ST_INTERSECTS(trechos.geom, ST_GeomFromText(?, 4326));",
-        //        Arrays.asList(routeString));
-        //System.out.println("OOOPA");
     }
-    
-    
+
     public static void startHttpServer() throws IOException {
         int port = Integer.parseInt(System.getenv("HTTP_PORT"));
         ExecutorService executor = Executors.newFixedThreadPool(4);
@@ -55,62 +50,7 @@ public class SafeTripServer {
         server.start();
     }
 
-    public static void startHttpsServer() {
-        try {
-            // setup the socket address
-            InetSocketAddress address = new InetSocketAddress(Integer.parseInt(System.getenv("HTTPS_PORT")));
-
-            // initialise the HTTPS server
-            HttpsServer httpsServer = HttpsServer.create(address, 0);
-            SSLContext sslContext = SSLContext.getInstance("TLS");
-
-            // initialise the keystore
-            char[] password = System.getenv("CERTIFICATE_PASSWORD").toCharArray();
-            KeyStore ks = KeyStore.getInstance("JKS");
-            FileInputStream fis = new FileInputStream("testkey.jks");
-            ks.load(fis, password);
-
-            // setup the key manager factory
-            KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
-            kmf.init(ks, password);
-
-            // setup the trust manager factory
-            TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
-            tmf.init(ks);
-
-            // setup the HTTPS context and parameters
-            sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
-            httpsServer.setHttpsConfigurator(new HttpsConfigurator(sslContext) {
-                public void configure(HttpsParameters params) {
-                    try {
-                        // initialise the SSL context
-                        SSLContext context = getSSLContext();
-                        SSLEngine engine = context.createSSLEngine();
-                        params.setNeedClientAuth(false);
-                        params.setCipherSuites(engine.getEnabledCipherSuites());
-                        params.setProtocols(engine.getEnabledProtocols());
-
-                        // Set the SSL parameters
-                        SSLParameters sslParameters = context.getSupportedSSLParameters();
-                        params.setSSLParameters(sslParameters);
-
-                    } catch (Exception ex) {
-                        System.out.println("Failed to create HTTPS port");
-                    }
-                }
-            });
-            httpsServer.createContext("/route", new AccessResourceIntent());
-            httpsServer.setExecutor(null); // creates a default executor
-            httpsServer.start();
-
-        } catch (Exception exception) {
-            System.out.println("Failed to create HTTPS server on port " + 443 + " of localhost");
-            exception.printStackTrace();
-
-        }
-    }
-    
-    static class AccessResourceIntent implements HttpHandler {        
+    static class AccessResourceIntent implements HttpHandler {
         @Override
         public void handle(HttpExchange t) throws IOException {
             System.out.println("REQUEST FAST");
@@ -168,7 +108,7 @@ public class SafeTripServer {
     }
     
     
-        static class AccessResourceIntent2 implements HttpHandler {        
+    static class AccessResourceIntent2 implements HttpHandler {
         @Override
         public void handle(HttpExchange t) throws IOException {
             System.out.println("REQUEST SAFE");

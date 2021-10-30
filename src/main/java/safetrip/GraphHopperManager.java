@@ -22,12 +22,10 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.WKBReader;
 import org.postgresql.util.PGobject;
@@ -51,23 +49,7 @@ public class GraphHopperManager {
         
         String nome = "poligono";
         int contador = 0;
-        String opalele = nome + contador;
-        
-//        ResultSet rs1 = rs;
-        
-        int count = 0;
-        int max = 0;
-        int numberAcidents = 0;
-//        while ( rs1.next() ) {
-//            BigDecimal buff = (BigDecimal)(rs.getObject(4));
-//            numberAcidents += buff.intValue();
-//            if (numberAcidents > max) {
-//                max = numberAcidents;
-//            }
-//            count++;
-//        }
-        
-//        float average = numberAcidents/count;
+
         double step = (maxAccidents - averageAccidents)/50.0;
         
         System.out.println(averageAccidents);
@@ -76,9 +58,7 @@ public class GraphHopperManager {
         while ( rs.next() ) {
             BigDecimal buff = (BigDecimal)(rs.getObject(4));
             int acidentesPolygon = buff.intValue();
-//            ids.add(nome + contador);
-            
-            
+
             PGobject geomCol = (PGobject) rs.getObject(2);
             
             WKBReader wkbReader = new WKBReader();
@@ -90,7 +70,6 @@ public class GraphHopperManager {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            Envelope env = geometry.getEnvelopeInternal();
             JsonFeature jsonFeature = new JsonFeature(nome + contador, "tipo", null, geometry, properties);
         
             maps.put(nome + contador, jsonFeature);
@@ -100,11 +79,8 @@ public class GraphHopperManager {
             contador++;
 
         }
-        System.out.println("floating in the most peculiar waaaay");
-        
         model.setAreas(maps);
-       
-        
+
         String ifStatement = "road_class != STEPS";
         model.addToPriority(If(ifStatement, MULTIPLY, 0.8D));
         
@@ -237,28 +213,6 @@ public class GraphHopperManager {
                 + "|" + daysMap.get("Domingo");
         
         return response;
-        
-        /*
-        OUTRAS INFOS DO CAMINHO MAIS R�PIDO
-        
-        // use the best path, see the GHResponse class for more possibilities.
-        ResponsePath path = rsp.getBest();
-
-        // points, distance in meters and time in millis of the full path
-        PointList pointList = path.getPoints();
-        double distance = path.getDistance();
-        long timeInMs = path.getTime();
-
-        Translation tr = hopper.getTranslationMap().getWithFallBack(Locale.UK);
-        InstructionList il = path.getInstructions();
-        // iterate over all turn instructions
-        for (Instruction instruction : il) {
-            // System.out.println("distance " + instruction.getDistance() + " for instruction: " + instruction.getTurnDeion(tr));
-        }
-        assert il.size() == 6;
-        assert Helper.round(path.getDistance(), -2) == 900;
-        * 
-        * ***/
     }
     
     static String customizableRouting(double initLat, double initLng,
@@ -286,8 +240,6 @@ public class GraphHopperManager {
 //        CustomModel model = new CustomModel();
         req.putHint(CustomModel.KEY, model);
         
-        //model = createEnvolope(-50.39154052734375, -50.167694091796875, -25.506502941775665, -25.408546892670543, model);
-
         rsp = hopper.route(req);
         System.out.println("Roteou 2");
                         
@@ -345,33 +297,5 @@ public class GraphHopperManager {
         
         return response;
 
-    }
-    
-    public static double round(double value, int places) {
-        if (places < 0) {
-            throw new IllegalArgumentException();
-        }
-
-        long factor = (long) Math.pow(10, places);
-        value = value * factor;
-        long tmp = Math.round(value);
-        return (double) tmp / factor;
-    }
-
-    public static CustomModel createEnvolope(Geometry geom, CustomModel model) {
-        
-        Map<String, JsonFeature> maps = new HashMap<>();
-        Map<String, Object> properties = new HashMap<>();
-        
-        Envelope env = geom.getEnvelopeInternal();
-        
-        JsonFeature jsonFeature = new JsonFeature("opa", "id1", env, geom, properties);
-        
-        maps.put("opa", jsonFeature);
-        model.setAreas(maps);
-        
-        model.addToPriority(If("in_area_opa == true", MULTIPLY, 0.80));
-        
-        return model;
     }
 }

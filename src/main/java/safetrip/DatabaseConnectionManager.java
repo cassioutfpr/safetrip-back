@@ -9,8 +9,6 @@ import java.sql.Statement;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.locationtech.jts.geom.Geometry;
-
 
 public class DatabaseConnectionManager {
     
@@ -18,12 +16,12 @@ public class DatabaseConnectionManager {
     private static Connection con;
     private static Statement stmt;
     
-    public static void init() throws SQLException {
+    public static void init() {
         createConnection();
         createStatement();
     }
     
-    public static Connection createConnection() throws SQLException {
+    public static void createConnection() {
         try {
             Class.forName(driverName);
             try {
@@ -40,17 +38,15 @@ public class DatabaseConnectionManager {
             System.out.println(ex.getMessage());
             ex.printStackTrace();
         }
-        return con;
     }
     
-    public static Statement createStatement() throws SQLException {
+    public static void createStatement() {
         try {
             stmt = con.createStatement();
         } catch (SQLException ex) {
             Logger.getLogger(SafeTripServer.class.getName()).log(Level.SEVERE, null, ex);
             ex.printStackTrace();
         }
-        return stmt;
     }
     
     public static ResultSet query(String queryString) throws SQLException {
