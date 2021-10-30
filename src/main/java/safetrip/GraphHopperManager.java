@@ -135,11 +135,11 @@ public class GraphHopperManager {
     public static Map<String, Integer> initDaysMap() {
         Map<String, Integer> daysMap = new HashMap<>();
         daysMap.put("Segunda", 0);
-        daysMap.put("Ter�a", 0);
+        daysMap.put("Terça", 0);
         daysMap.put("Quarta", 0);
         daysMap.put("Quinta", 0);
         daysMap.put("Sexta", 0);
-        daysMap.put("S�bado", 0);
+        daysMap.put("Sábado", 0);
         daysMap.put("Domingo", 0);
         
         return daysMap;
