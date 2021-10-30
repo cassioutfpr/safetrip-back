@@ -139,6 +139,7 @@ public class SafeTripServer {
                 double initLng = jsonMap.get("initLng");
                 double destLat = jsonMap.get("destLat");
                 double destLng = jsonMap.get("destLng");
+                System.out.println("Routing from: (" + initLat + ", " + initLng + ") to (" + destLat + ", " + destLng + ")");
                 try {
                     response = GraphHopperManager.getFastestRoute(initLat, initLng, destLat, destLng);
                 } catch (SQLException ex) {
