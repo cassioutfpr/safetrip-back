@@ -162,22 +162,25 @@ public class GraphHopperManager {
         String response = "";
         Map<Integer, Integer> hoursMap = initHoursMap();
         Map<String, Integer> daysMap = initDaysMap();
+        List<Coordinate> routeCoordinates = new ArrayList<>();
         for (int i = 0; i < routePoints; i++ ) {
             if (i%2 == 0) {
                 response += String.valueOf(rsp.getBest().getPoints().getLat(i)) + "," + String.valueOf(rsp.getBest().getPoints().getLon(i)) + ";";
             }
 
             if (i%3 == 0) {
-                ResultSet rs = trechosRepository.findByContainingLongAndLat(
+                routeCoordinates.add(new Coordinate(
                     rsp.getBest().getPoints().getLon(i),
                     rsp.getBest().getPoints().getLat(i)
-                );
-                while ( rs.next() ) {
-                    String buff = (String) (rs.getObject(1));
-                    if (!polygonIdList.contains(buff)) {
-                        polygonIdList.add(buff);
-                    }
-                }
+                ));
+            }
+        }
+
+        ResultSet rs = trechosRepository.findByContainingLongAndLatList(routeCoordinates);
+        while ( rs.next() ) {
+            String buff = (String) (rs.getObject(1));
+            if (!polygonIdList.contains(buff)) {
+                polygonIdList.add(buff);
             }
         }
 
@@ -245,25 +248,27 @@ public class GraphHopperManager {
         Map<String, Integer> daysMap = initDaysMap();
         String response = "";
         List<String> polygonIdList = new ArrayList<>();
+        List<Coordinate> routeCoordinates = new ArrayList<>();
         for (int i = 0; i < latitudes; i++ ) {
             if (i%2 == 0) {
                 response += String.valueOf(rsp.getBest().getPoints().getLat(i)) + "," + String.valueOf(rsp.getBest().getPoints().getLon(i)) + ";";
             }
 
             if (i%3 == 0) {
-                ResultSet rs = trechosRepository.findByContainingLongAndLat(
-                        rsp.getBest().getPoints().getLon(i),
-                        rsp.getBest().getPoints().getLat(i)
-                );
-                while ( rs.next() ) {
-                    String buff = (String) (rs.getObject(1));
-                    if (!polygonIdList.contains(buff)) {
-                        polygonIdList.add(buff);
-                    }
-                }
+                routeCoordinates.add(new Coordinate(
+                    rsp.getBest().getPoints().getLon(i),
+                    rsp.getBest().getPoints().getLat(i)
+                ));
             }
         }
 
+        ResultSet rs = trechosRepository.findByContainingLongAndLatList(routeCoordinates);
+        while ( rs.next() ) {
+            String buff = (String) (rs.getObject(1));
+            if (!polygonIdList.contains(buff)) {
+                polygonIdList.add(buff);
+            }
+        }
         ResultSet rs2 = acidentesRepository.findByTrechos(polygonIdList);
 
         while ( rs2.next() ) {

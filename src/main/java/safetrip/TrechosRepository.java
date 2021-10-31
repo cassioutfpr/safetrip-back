@@ -3,6 +3,8 @@ package safetrip;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class TrechosRepository {
 
@@ -12,12 +14,17 @@ public class TrechosRepository {
         tableName = System.getenv("TRECHOS_TABLE_NAME");
     }
 
-    public ResultSet findByContainingLongAndLat(Double longg, Double lat) throws SQLException {
-        String containingPoint = "POINT(" + longg + " " + lat + ")";
+    public ResultSet findByContainingLongAndLatList(List<Coordinate> coordinatesList) throws SQLException {
+        List<String> pointsList = coordinatesList.stream()
+            .map(coordinates -> "POINT(" + coordinates.longitude + " " + coordinates.latitude + ")")
+            .collect(Collectors.toList());
+        String baseQuery = setTable("SELECT * FROM public.:table WHERE ST_CONTAINS(geom, ST_GeomFromText(?, 4326))");
+        String[] queries = new String[pointsList.size()];
+        Arrays.fill(queries, baseQuery);
 
         return DatabaseConnectionManager.queryPreparedStatement(
-            setTable("SELECT * FROM public.:table WHERE ST_CONTAINS(geom, ST_GeomFromText(?, 4326));"),
-            Arrays.asList(containingPoint)
+            String.join(" UNION ", queries) + ";",
+            pointsList
         );
     }
 
