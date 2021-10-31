@@ -3,6 +3,7 @@ package safetrip;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.List;
 
 public class AcidentesRepository {
 
@@ -12,10 +13,13 @@ public class AcidentesRepository {
         tableName = System.getenv("ACIDENTES_TABLE_NAME");
     }
 
-    public ResultSet findByTrecho(String trecho) throws SQLException {
+    public ResultSet findByTrechos(List<String> trechos) throws SQLException {
+        String[] placeholders = new String[trechos.size()];
+        Arrays.fill(placeholders, "?");
+
         return DatabaseConnectionManager.queryPreparedStatement(
-            setTable("SELECT * FROM public.:table WHERE trecho = ?;"),
-            Arrays.asList(trecho)
+            setTable("SELECT * FROM public.:table WHERE trecho IN (" + String.join(",", placeholders) + ");"),
+            trechos
         );
     }
 

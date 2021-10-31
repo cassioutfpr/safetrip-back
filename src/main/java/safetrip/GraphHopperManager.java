@@ -173,29 +173,30 @@ public class GraphHopperManager {
                     rsp.getBest().getPoints().getLat(i)
                 );
                 while ( rs.next() ) {
-                    String buff = (String)(rs.getObject(1));
-                    if (!polygonIdList.contains(buff))  {
+                    String buff = (String) (rs.getObject(1));
+                    if (!polygonIdList.contains(buff)) {
                         polygonIdList.add(buff);
-
-                        ResultSet rs2 = acidentesRepository.findByTrecho(buff);
-
-                        while ( rs2.next() ) {
-                            String dia_semana = (String)(rs2.getObject(3));
-                            BigDecimal hora = (BigDecimal)(rs2.getObject(33));
-
-                            if (hoursMap.get(hora.intValue()) != null) {
-                                hoursMap.put(hora.intValue(), hoursMap.get(hora.intValue()) + 1);
-                            }
-
-                            if (daysMap.get(dia_semana) != null) {
-                                daysMap.put(dia_semana, daysMap.get(dia_semana) + 1);
-                            }
-
-                        }
                     }
                 }
             }
         }
+
+        ResultSet rs2 = acidentesRepository.findByTrechos(polygonIdList);
+
+        while ( rs2.next() ) {
+            String dia_semana = (String)(rs2.getObject(3));
+            BigDecimal hora = (BigDecimal)(rs2.getObject(33));
+
+            if (hoursMap.get(hora.intValue()) != null) {
+                hoursMap.put(hora.intValue(), hoursMap.get(hora.intValue()) + 1);
+            }
+
+            if (daysMap.get(dia_semana) != null) {
+                daysMap.put(dia_semana, daysMap.get(dia_semana) + 1);
+            }
+
+        }
+
         ElapsedTimeService.printElapsedTime("Carregou acidentes fast");
 
         response = response + "|" + rsp.getBest().getTime() + "|" + rsp.getBest().getDistance();
@@ -255,26 +256,26 @@ public class GraphHopperManager {
                         rsp.getBest().getPoints().getLat(i)
                 );
                 while ( rs.next() ) {
-                    String buff = (String)(rs.getObject(1));
-                    if (!polygonIdList.contains(buff))  {
+                    String buff = (String) (rs.getObject(1));
+                    if (!polygonIdList.contains(buff)) {
                         polygonIdList.add(buff);
-
-                        ResultSet rs2 = acidentesRepository.findByTrecho(buff);
-
-                        while ( rs2.next() ) {
-                            String dia_semana = (String)(rs2.getObject(3));
-                            BigDecimal hora = (BigDecimal)(rs2.getObject(33));
-
-                            if (hoursMap.get(hora.intValue()) != null) {
-                                hoursMap.put(hora.intValue(), hoursMap.get(hora.intValue()) + 1);
-                            }
-
-                            if (daysMap.get(dia_semana) != null) {
-                                daysMap.put(dia_semana, daysMap.get(dia_semana) + 1);
-                            }
-                        }
                     }
                 }
+            }
+        }
+
+        ResultSet rs2 = acidentesRepository.findByTrechos(polygonIdList);
+
+        while ( rs2.next() ) {
+            String dia_semana = (String)(rs2.getObject(3));
+            BigDecimal hora = (BigDecimal)(rs2.getObject(33));
+
+            if (hoursMap.get(hora.intValue()) != null) {
+                hoursMap.put(hora.intValue(), hoursMap.get(hora.intValue()) + 1);
+            }
+
+            if (daysMap.get(dia_semana) != null) {
+                daysMap.put(dia_semana, daysMap.get(dia_semana) + 1);
             }
         }
         ElapsedTimeService.printElapsedTime("Carregou acidentes safe");
