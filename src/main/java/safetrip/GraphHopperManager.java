@@ -31,12 +31,12 @@ import org.locationtech.jts.io.WKBReader;
 import org.postgresql.util.PGobject;
 
 public class GraphHopperManager {
-    
+
     private static CustomModel model;
     public static final String osmFile = "sul-latest.osm.pbf";
     private static final AcidentesRepository acidentesRepository = new AcidentesRepository();
     private static final TrechosRepository trechosRepository = new TrechosRepository();
-    
+
     public static CustomModel createCustomModelFromPolygonsResultSet(
         ResultSet rs,
         Double averageAccidents,
@@ -46,21 +46,21 @@ public class GraphHopperManager {
         Map<String, JsonFeature> maps = new HashMap<>();
         Map<String, Object> properties = new HashMap<>();
         List<Double> ids = new ArrayList<>();
-        
+
         String nome = "poligono";
         int contador = 0;
 
         double step = (maxAccidents - averageAccidents)/50.0;
-        
+
         System.out.println(averageAccidents);
         System.out.println(maxAccidents);
-        
+
         while ( rs.next() ) {
             BigDecimal buff = (BigDecimal)(rs.getObject(4));
             int acidentesPolygon = buff.intValue();
 
             PGobject geomCol = (PGobject) rs.getObject(2);
-            
+
             WKBReader wkbReader = new WKBReader();
             byte[] geom = wkbReader.hexToBytes(geomCol.getValue());
 
@@ -71,11 +71,11 @@ public class GraphHopperManager {
                 e.printStackTrace();
             }
             JsonFeature jsonFeature = new JsonFeature(nome + contador, "tipo", null, geometry, properties);
-        
+
             maps.put(nome + contador, jsonFeature);
             double multiplier = 0.8 - (((acidentesPolygon - averageAccidents)/step) * 0.01);
             ids.add(multiplier);
-            
+
             contador++;
 
         }
@@ -83,7 +83,7 @@ public class GraphHopperManager {
 
         String ifStatement = "road_class != STEPS";
         model.addToPriority(If(ifStatement, MULTIPLY, 0.8D));
-        
+
         contador = 0;
         for (double mult : ids) {
             ifStatement = "in_area_" + nome + contador + " == true";
@@ -96,10 +96,10 @@ public class GraphHopperManager {
             model.addToPriority(If(ifStatement, MULTIPLY, opal));
             contador++;
         }
-        
+
         return model;
     }
-    
+
     public static Map<Integer, Integer> initHoursMap() {
         Map<Integer, Integer> hoursMap = new HashMap<>();
         for(int i = 0; i < 24; i++) {
@@ -107,7 +107,7 @@ public class GraphHopperManager {
         }
         return hoursMap;
     }
-    
+
     public static Map<String, Integer> initDaysMap() {
         Map<String, Integer> daysMap = new HashMap<>();
         daysMap.put("Segunda", 0);
@@ -117,10 +117,10 @@ public class GraphHopperManager {
         daysMap.put("Sexta", 0);
         daysMap.put("Sábado", 0);
         daysMap.put("Domingo", 0);
-        
+
         return daysMap;
     }
-    
+
     static GraphHopper createGraphHopperInstance() {
         GraphHopper hopper = new GraphHopper();
         hopper.setOSMFile(osmFile);
@@ -141,7 +141,7 @@ public class GraphHopperManager {
 
     public static String getFastestRoute(double initLat, double initLng,
             double destLat, double destLng) throws SQLException {
-            
+
         GraphHopper hopper = createGraphHopperInstance();
         List<String> polygonIdList = new ArrayList<>();
         // simple configuration of the request object
@@ -155,12 +155,10 @@ public class GraphHopperManager {
         // handle errors
         if (rsp.hasErrors())
             throw new RuntimeException(rsp.getErrors().toString());
-       
 
-        
         int routePoints = rsp.getBest().getPoints().size();
-        System.out.println("Roteou 1");
-        
+        ElapsedTimeService.printElapsedTime("Roteou fast");
+
         String response = "";
         Map<Integer, Integer> hoursMap = initHoursMap();
         Map<String, Integer> daysMap = initDaysMap();
@@ -168,7 +166,7 @@ public class GraphHopperManager {
             if (i%2 == 0) {
                 response += String.valueOf(rsp.getBest().getPoints().getLat(i)) + "," + String.valueOf(rsp.getBest().getPoints().getLon(i)) + ";";
             }
-            
+
             if (i%3 == 0) {
                 ResultSet rs = trechosRepository.findByContainingLongAndLat(
                     rsp.getBest().getPoints().getLon(i),
@@ -178,43 +176,42 @@ public class GraphHopperManager {
                     String buff = (String)(rs.getObject(1));
                     if (!polygonIdList.contains(buff))  {
                         polygonIdList.add(buff);
-            
+
                         ResultSet rs2 = acidentesRepository.findByTrecho(buff);
 
                         while ( rs2.next() ) {
                             String dia_semana = (String)(rs2.getObject(3));
                             BigDecimal hora = (BigDecimal)(rs2.getObject(33));
-                            
+
                             if (hoursMap.get(hora.intValue()) != null) {
                                 hoursMap.put(hora.intValue(), hoursMap.get(hora.intValue()) + 1);
                             }
-                            
+
                             if (daysMap.get(dia_semana) != null) {
                                 daysMap.put(dia_semana, daysMap.get(dia_semana) + 1);
                             }
-                            
+
                         }
                     }
                 }
             }
         }
-        
-        System.out.println("Respondeu 1");
-        
+        ElapsedTimeService.printElapsedTime("Carregou acidentes fast");
+
         response = response + "|" + rsp.getBest().getTime() + "|" + rsp.getBest().getDistance();
-        
+
         for (int i = 0; i < 24; i++) {
             response += "|" + hoursMap.get(i);
         }
-        
+
         response += "|" + daysMap.get("Segunda") + "|" + daysMap.get("Terça")
                 + "|" + daysMap.get("Quarta") + "|" + daysMap.get("Quinta")
                 + "|" + daysMap.get("Sexta") + "|" + daysMap.get("Sábado")
                 + "|" + daysMap.get("Domingo");
-        
+
         return response;
     }
-    
+
     static String customizableRouting(double initLat, double initLng,
             double destLat, double destLng) throws SQLException {
         GraphHopper hopper = new GraphHopper();
@@ -234,15 +231,14 @@ public class GraphHopperManager {
                 addPoint(new GHPoint(initLat, initLng)).addPoint(new GHPoint(destLat, destLng));
 
         GHResponse rsp;
-        
+
         // 2. now avoid primary roads and reduce maximum speed, see docs/core/profiles.md for an in-depth explanation
         // and also the blog posts https://www.graphhopper.com/?s=customizable+routing
-//        CustomModel model = new CustomModel();
         req.putHint(CustomModel.KEY, model);
-        
+
         rsp = hopper.route(req);
-        System.out.println("Roteou 2");
-                        
+        ElapsedTimeService.printElapsedTime("Roteou safe");
+
         int latitudes = rsp.getBest().getPoints().size();
         Map<Integer, Integer> hoursMap = initHoursMap();
         Map<String, Integer> daysMap = initDaysMap();
@@ -252,7 +248,7 @@ public class GraphHopperManager {
             if (i%2 == 0) {
                 response += String.valueOf(rsp.getBest().getPoints().getLat(i)) + "," + String.valueOf(rsp.getBest().getPoints().getLon(i)) + ";";
             }
-            
+
             if (i%3 == 0) {
                 ResultSet rs = trechosRepository.findByContainingLongAndLat(
                         rsp.getBest().getPoints().getLon(i),
@@ -262,39 +258,38 @@ public class GraphHopperManager {
                     String buff = (String)(rs.getObject(1));
                     if (!polygonIdList.contains(buff))  {
                         polygonIdList.add(buff);
-            
+
                         ResultSet rs2 = acidentesRepository.findByTrecho(buff);
 
                         while ( rs2.next() ) {
                             String dia_semana = (String)(rs2.getObject(3));
                             BigDecimal hora = (BigDecimal)(rs2.getObject(33));
-                            
+
                             if (hoursMap.get(hora.intValue()) != null) {
                                 hoursMap.put(hora.intValue(), hoursMap.get(hora.intValue()) + 1);
                             }
-                            
+
                             if (daysMap.get(dia_semana) != null) {
                                 daysMap.put(dia_semana, daysMap.get(dia_semana) + 1);
                             }
-                            
                         }
                     }
                 }
             }
         }
-        
-        System.out.println("Respondeu 2");
+        ElapsedTimeService.printElapsedTime("Carregou acidentes safe");
+
         response = response + "|" + rsp.getBest().getTime() + "|" + rsp.getBest().getDistance();
-        
+
         for (int i = 0; i < 24; i++) {
             response += "|" + hoursMap.get(i);
         }
-        
+
         response += "|" + daysMap.get("Segunda") + "|" + daysMap.get("Terça")
                 + "|" + daysMap.get("Quarta") + "|" + daysMap.get("Quinta")
                 + "|" + daysMap.get("Sexta") + "|" + daysMap.get("Sábado")
                 + "|" + daysMap.get("Domingo");
-        
+
         return response;
 
     }

@@ -54,6 +54,7 @@ public class SafeTripServer {
         @Override
         public void handle(HttpExchange t) throws IOException {
             System.out.println("REQUEST FAST");
+            ElapsedTimeService.start();
             
             t.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
             t.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, OPTIONS, POST");
