@@ -178,7 +178,7 @@ public class GraphHopperManager {
 
         ResultSet rs = trechosRepository.findByContainingLongAndLatList(routeCoordinates);
         while ( rs.next() ) {
-            String buff = (String) (rs.getObject(1));
+            String buff = (String) (rs.getObject("id"));
             if (!polygonIdList.contains(buff)) {
                 polygonIdList.add(buff);
             }
@@ -187,8 +187,8 @@ public class GraphHopperManager {
         ResultSet rs2 = acidentesRepository.findByTrechos(polygonIdList);
 
         while ( rs2.next() ) {
-            String dia_semana = (String)(rs2.getObject(3));
-            BigDecimal hora = (BigDecimal)(rs2.getObject(33));
+            String dia_semana = (String)(rs2.getObject("dia_semana"));
+            BigDecimal hora = (BigDecimal)(rs2.getObject("hora"));
 
             if (hoursMap.get(hora.intValue()) != null) {
                 hoursMap.put(hora.intValue(), hoursMap.get(hora.intValue()) + 1);
@@ -264,7 +264,7 @@ public class GraphHopperManager {
 
         ResultSet rs = trechosRepository.findByContainingLongAndLatList(routeCoordinates);
         while ( rs.next() ) {
-            String buff = (String) (rs.getObject(1));
+            String buff = (String) (rs.getObject("id"));
             if (!polygonIdList.contains(buff)) {
                 polygonIdList.add(buff);
             }
@@ -272,8 +272,8 @@ public class GraphHopperManager {
         ResultSet rs2 = acidentesRepository.findByTrechos(polygonIdList);
 
         while ( rs2.next() ) {
-            String dia_semana = (String)(rs2.getObject(3));
-            BigDecimal hora = (BigDecimal)(rs2.getObject(33));
+            String dia_semana = (String)(rs2.getObject("dia_semana"));
+            BigDecimal hora = (BigDecimal)(rs2.getObject("hora"));
 
             if (hoursMap.get(hora.intValue()) != null) {
                 hoursMap.put(hora.intValue(), hoursMap.get(hora.intValue()) + 1);
